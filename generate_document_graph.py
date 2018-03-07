@@ -7,23 +7,20 @@ from nltk.corpus import stopwords
 import collections
 import operator
 import sys
-from matplotlib import pylab
 import networkx as nx
 import matplotlib.pyplot as plt
-reload(sys)
-sys.setdefaultencoding('utf8')
-
 from read_data import *
 from resolve_coref import *
 from directed_graph import Graph
 from amr import AMR
+from concept_relation_list import concept_relation_list
 
 
 # Input - list of sentence AMRs, the form of AMRs so far is the 'AMR' class
 # Procedure - 
 # 	1. add an extra root node and join roots of each sentences as the children of the main root node
 # 	2. makes sure that variable names are not same across different sentences
-# Output - merged document amr. Note - Coreference is not done by this function and should be done after this
+# Output - merged document amr
 
 # change the code to make changes to make the variable change names in original sentences as well
 def merge_sentence_amrs(amr_list,debug=False):
@@ -33,8 +30,8 @@ def merge_sentence_amrs(amr_list,debug=False):
 	# this node should never be used in the actual representaion of AMR
 	doc_amr.append({'child_number': 0,
 					'children_list': [],
-					'text': '(Rinfinite / root ',
-					'common_text': ' root ',
+					'text': '(Rinfinite / root',
+					'common_text': '/ root',
 					'depth': 0,
 					'parent_index': -1,
 					'num_children': 0,
@@ -52,10 +49,36 @@ def merge_sentence_amrs(amr_list,debug=False):
 		# dictionary mapping from old to replaced variables
 		replaced_dict_current_sent = {}
 		doc_amr[0]['children_list'].append(len(doc_amr))
+		cycles = list(nx.simple_cycles(sent_amr.directed_graph.nx_graph))
+		# todo - remove only those edges that removes all the cycles from the graph
+		if len(cycles) != 0:
+			print sent_amr.directed_graph._graph
+			for cycle in cycles:
+				print cycle
+				for node in cycle:
+					sent_amr.directed_graph.remove(node=node,reconstruct_nx=True)
+
+			connected_components = nx.connected_component_subgraphs(sent_amr.directed_graph.undirected_nx_graph)
+
+			if len(connected_components) > 1:
+				# find the largest component
+				largest_component = []
+				for graph in connected_components:
+					print graph.nodes()
+					if len(graph.nodes()) > len(largest_component):
+						largest_component = graph.nodes()
+
+				for node in sent_amr.directed_graph._graph.keys():
+					if node not in largest_component:	sent_amr.directed_graph.remove(node=node)
+
+			print sent_amr.directed_graph._graph
+
+			sent_amr.reconstruct_amr()
 
 		# Creating correct alignments
 		for current_word_index in sorted(sent_amr.alignments.keys()):
 			for alignment in sent_amr.alignments[current_word_index]:
+				# print alignment
 				# This is slightly different than the original alignment format
 				# Example - ['1', '1', '1', '1', '1', '2', '1']
 				# (Rinfinite / root 
@@ -132,26 +155,3 @@ def merge_sentence_amrs(amr_list,debug=False):
 	# add an extra 'closing paranthesis' in the end
 	doc_amr[-1]['text'] = doc_amr[-1]['text'] + ')'
 	return doc_amr, document_text, document_alignments, var_to_sent
-
-def save_graph(graph,file_name):
-	#initialze Figure
-	plt.figure(num=None, figsize=(20, 20), dpi=80)
-	plt.axis('off')
-	fig = plt.figure(1)
-	pos = nx.spring_layout(graph)
-	nx.draw_networkx_nodes(graph,pos)
-	nx.draw_networkx_edges(graph,pos)
-	nx.draw_networkx_labels(graph,pos)
-
-	cut = 1.05
-	xmax = cut * max(xx for xx, yy in pos.values())
-	ymax = cut * max(yy for xx, yy in pos.values())
-	xmin = cut * min(xx for xx, yy in pos.values())
-	ymin = cut * min(yy for xx, yy in pos.values())
-	plt.xlim(xmin, xmax)
-	plt.ylim(ymin, ymax)
-
-	plt.savefig(file_name,bbox_inches="tight")
-	pylab.close()
-	del fig
-
