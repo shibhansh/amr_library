@@ -13,7 +13,7 @@ from read_data import *
 from resolve_coref import *
 from directed_graph import Graph
 from amr import AMR
-from concept_relation_list import concept_relation_list
+# from concept_relation_list import concept_relation_list
 
 
 # Input - list of sentence AMRs, the form of AMRs so far is the 'AMR' class

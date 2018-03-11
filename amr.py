@@ -1,5 +1,5 @@
 from directed_graph import Graph
-from concept_relation_list import concept_relation_list
+# from concept_relation_list import concept_relation_list
 import copy
 import sys
 import operator
