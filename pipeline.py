@@ -16,7 +16,17 @@ from generate_document_graph import *
 from tok_std_format_conversion import *
 from directed_graph import Graph
 from amr import AMR
-from concept_relation_list import concept_relation_list
+# from concept_relation_list import concept_relation_list
+
+def save_stories(stories,path=''):
+	if path == '':
+		path = dataset+"/stories_"+dataset+".txt"
+	os.system("touch "+path)
+	f = codecs.open(path,'w')
+	for i in range(0,len(stories)):
+		f.write(stories[i])
+		f.write('\n')
+	f.close()
 
 def main(arguments):
 	parser = argparse.ArgumentParser(

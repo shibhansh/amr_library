@@ -36,6 +36,9 @@ def get_resolved_clusters(location_of_resolved_story='',location_of_story_in_fil
 	attention_weights = [x[0] for x in attention_weights]
 	return clusters, story, attention_weights
 
+def word_to_alignment(amr,word='',sentence='',location_of_word=0):
+	return amr.word_to_alignment(word,sentence,location_of_word)
+
 def words_corresponding_to_clusteres(story=[],clusters=[],attention_weights=[],highlight_attention=False):
 	# give clusters (indices) - finds the 'words' corresponding to it
 	for cluster in clusters:
