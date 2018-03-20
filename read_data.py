@@ -1,3 +1,5 @@
+import codecs
+
 # Takes input the location of the gold_standard AMRs
 # Returns the list of documents read
 # Each document is list of dictionaries - dict['snt-type'] = \

@@ -1,5 +1,5 @@
 from directed_graph import Graph
-# from concept_relation_list import concept_relation_list
+#from concept_relation_list import concept_relation_list
 import copy
 import sys
 import operator
@@ -491,6 +491,7 @@ class AMR(object):
 					if print_indices: 
 						file.write(str(index_node) + ' ')
 					file.write(node['depth']*'	' + node['text']+ '\n')
+			file.write('\n')
 		if to_print:
 			# print only if not writing in file
 			for index_node,node in enumerate(self.amr):

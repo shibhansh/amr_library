@@ -92,12 +92,6 @@ def resolve_coref_doc_AMR(amr,resolved=True,story='',
 	global total_to_merge
 	global total_merged
 
-	if not resolved:
-		resolve_corefereces_document(location_of_resolver='.',story=story)
-	clusters, story, attention_weights = get_resolved_clusters(
-										location_of_resolved_story=location_of_resolved_story,
-										location_of_story_in_file=location_of_story_in_file)
-	lStory = [word.lower() for word in story]
 
 	highlight_attention = True
 	# Hardcoded merging - 
@@ -108,6 +102,15 @@ def resolve_coref_doc_AMR(amr,resolved=True,story='',
 		total_merged += 1
 		total_to_merge += 1
 	amr.reconstruct_amr()
+
+	return amr
+
+	if not resolved:
+		resolve_corefereces_document(location_of_resolver='.',story=story)
+	clusters, story, attention_weights = get_resolved_clusters(
+										location_of_resolved_story=location_of_resolved_story,
+										location_of_story_in_file=location_of_story_in_file)
+	lStory = [word.lower() for word in story]
 
 	for cluster in clusters:
 		words_max_weight_attention =[]
