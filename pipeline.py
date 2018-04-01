@@ -33,7 +33,7 @@ def main(arguments):
 		description=__doc__,
 		formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 	parser.add_argument('--input_file', help="Path of the file containing AMRs of each sentence", type=str, 
-				default='/home/shibhansh/UGP-2/data/LDC2015E86_DEFT_Phase_2_AMR_Annotation_R1/' + \
+				default='/home/prerna/Documents/thesis_work/LDC2015E86_DEFT_Phase_2_AMR_Annotation_R1/' + \
 				'data/amrs/split/test/deft-p2-amr-r1-amrs-test-alignments-proxy.txt')
 	parser.add_argument('--dataset', help="Name of dataset",
 				type=str, default='')
@@ -176,8 +176,8 @@ def main(arguments):
 					if repeated_path:	continue
 
 					summary_paths.append(list(nodes))
-					summary_amrs_text.append(new_amr_graph.print_amr(file=f,print_indices=True,
-						write_in_file=False,one_line_output=False,return_str=True,to_print=False))
+					summary_amrs_text.append(new_amr_graph.print_amr(file=f,print_indices=False,
+						write_in_file=True,one_line_output=True,return_str=True,to_print=False))
 					print ''
 					summary_amrs.append(new_amr_graph)
 
