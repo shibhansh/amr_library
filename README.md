@@ -15,3 +15,5 @@ Textual representation of AMR(Abstract Meaning Representation) can be very hard 
 *grasshopper* - Python implementation of the grasshopper algorithm
 
 *generate_document_graph* - Merges the sentence AMRs without coreference resolution
+
+*pipeline* - An example usage of all other classes for summarization
