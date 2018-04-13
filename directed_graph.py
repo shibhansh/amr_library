@@ -209,14 +209,6 @@ class Graph(object):
         node_key = max((self.in_degree).iteritems(), key=operator.itemgetter(1))[0]
         return node_key
 
-    def second_max_in_degree(self,):
-        """Returns the node with the second maximum incoming arcs/edges"""
-        temp_graph = self.in_degree.copy()        
-        max_in_degree = max((temp_graph).iteritems(), key=operator.itemgetter(1))[0]
-        del temp_graph[max_in_degree]
-        node_key = max((temp_graph).iteritems(), key=operator.itemgetter(1))[0]
-        return node_key
-
     # Node merging function
     def merge_nodes_in_graph(self,first_var='',second_var=''):
         # 1. check if not merging node with ancestor
@@ -881,8 +873,6 @@ class Graph(object):
         return topological_order_sub_graph
 
     def topological_ordering(self,):
-        # write a code to dfs traverse the graph and find any topological ordering
-        # add temp node
         temp_in_degree = self.in_degree.copy()
         queue = []
         for node in temp_in_degree.keys():
@@ -908,14 +898,13 @@ class Graph(object):
                                              if len(self._graph[new_node]) != 0 else 0
 
             not_sorted = True
-            # sort nodes in the order of height
-            # in the same subsets, reorder topological order
+            # Sort nodes in the order of height
+            # In the same subsets, reorder topological order
             # Implemented like bubble sort
             while not_sorted:
                 for i in range(1,len(self.topological_order)-1):
                     if self.height[self.topological_order[i]] > self.height[self.topological_order[i+1]]:   break
 
-                # not_sorted = False if (i == len(self.topological_order)-1)
                 for i in range(1,len(self.topological_order)-1):
                     if self.height[self.topological_order[i]] > self.height[self.topological_order[i+1]]:
                         temp_node = self.topological_order[i+1]

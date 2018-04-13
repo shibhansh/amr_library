@@ -1,28 +1,19 @@
 from directed_graph import Graph
-#from concept_relation_list import concept_relation_list
 import copy
 import sys
 import operator
 
-# It's the AMR class - saves the text representation of a single AMR
-
-count = 0
-total_count=0
-interest  = 0
-
 class AMR(object):
 	""" 
-		Graph data structure, directed by default.
-	    Initializatin expects input of type - [['A', 'B'], ['B', 'C'], ['B', 'D']]
-		The attributes associated with AMR are - 'parent_index','children_list','depth','no_of_children',
+		Class to handle the textual representation of AMRs
+		The attributes associated with each AMR node are - 'parent_index','children_list','depth','no_of_children',
 		'child_number','text','variable','variable_start_index','variable_end_index','common_text'
+		Default Usage - 
+			Just pass in the AMR as 'text_list'
 	"""
 
 	def __init__(self, text_list=[],amr_with_attributes=False,text='',alignments=[],var_to_sent={},
 						sent_index=0):
-		# If the 'amr' that we get doesn't has attributes, it is just as text,
-		# 	i.e. each element of the list is just a line of the text
-		# else the amr that has all the attributes, and it is in the required form
 		self.text_list = text_list
 		self.amr = self.text_list
 		# mapping from 'variables' to indices in self.amr
@@ -38,7 +29,7 @@ class AMR(object):
 
 		self.get_var_to_index_mapping()
 
-		# Contains all the 'variables' in the list
+		# Contains all the 'variables' in the AMR
 		self.nodes = self.get_node_info()
 		self.common_text = self.get_common_text_var_mapping()
 
@@ -69,38 +60,9 @@ class AMR(object):
 		self.depth_dict = {}
 		self.get_depth_dict()
 
-
-	# Sentence Graph functions
-	def get_sentence_reference_graph(self,):
-		# a graph containing sentence to sentence links
-		self.get_sentence_boundaries_amr()
-		sentence_connections = []
-		weights = {}
-		for index_node, node in enumerate(self.amr):
-			current_sent_index = self.node_index_to_sent_index(index_node)
-			if current_sent_index == -1:	continue
-			current_var = node['variable']
-			for location in self.var_to_index[current_var]:
-				location_sent_index = self.node_index_to_sent_index(location)
-				if location_sent_index != current_sent_index:
-					if (current_sent_index, location_sent_index) not in sentence_connections:
-						sentence_connections.append((current_sent_index, location_sent_index))
-						sentence_connections.append((location_sent_index, current_sent_index))
-						weights[str(current_sent_index)+' '+str(location_sent_index)] = 1
-						weights[str(location_sent_index)+' '+str(current_sent_index)] = 1
-					else:
-						weights[str(current_sent_index)+' '+str(location_sent_index)] += 1
-						weights[str(location_sent_index)+' '+str(current_sent_index)] += 1
-
-		self.sentence_reference_graph = Graph(connections=sentence_connections,
-													nodes=range(0,len(self.sentence_boundries)),
-													weights=weights)
-
 	# Merging - Core Functions
-
 	def merge_named_entities_graph(self,):
 		# Desined specifically to run initially, may not work if run after some other mergers
-		# name list 
 		existing_names = []
 		node_merged = False
 		for var in self.directed_graph._graph.keys():
@@ -178,20 +140,12 @@ class AMR(object):
 		if first_var == '':	first_var = self.amr[first_node_index]['variable']
 		if second_var == '': second_var = self.amr[second_node_index]['variable']
 
-		returned_value = self.move_subtree_via_directed_graph(first_var=first_var,second_var=second_var)
+		returned_value = self.directed_graph.merge_nodes_in_graph(first_var=first_var,second_var=second_var)
 
 		if debug:	print returned_value
 		if returned_value != -1:	return returned_value
 
 		return 2
-
-	def move_subtree_via_directed_graph(self,first_var='',second_var=''):
-		# get AMR 'text_list' by merging and generation using the directed graph
-
-		returned_value = self.directed_graph.merge_nodes_in_graph(
-							first_var=first_var,second_var=second_var)
-
-		return returned_value
 
 	def reconstruct_amr(self):
 		text_list=self.directed_graph.generate_text_amr()
@@ -280,7 +234,6 @@ class AMR(object):
 		# No repreated edges, etc.
 		# No empty lines, every line should have a variable
 
-		# Check if brackets are balanced every where
 		num_opening_brackets = 0
 		num_closing_brackets = 0
 		for index,line in enumerate(self.text_list):
@@ -328,6 +281,7 @@ class AMR(object):
 		return op_list
 
 	def get_edges_children(self,node_index):
+		# returns the children edges
 		children_edges = []
 		for child_index in self.amr[node_index]['children_list']:
 			edge = self.edges[self.amr[node_index]['variable']+' '+self.amr[child_index]['variable']]
@@ -394,7 +348,6 @@ class AMR(object):
 	def word_to_alignment(self,word='',sentence='',location_of_word=0):
 		# assuming - tokenization of words in gold-standard and coreference resolver is same
 		if str(location_of_word) in self.alignments.keys():
-			# for now, not choosing the node, if there are multiple possible alignments
 			if len(self.alignments[str(location_of_word)]) == 1:
 				return self.alignments[str(location_of_word)][0]
 			if len(self.alignments[str(location_of_word)]) >= 1:
@@ -409,14 +362,7 @@ class AMR(object):
 		else: return None
 
 	def alignment_to_node_index(self,alignment):
-		global total_count
-		global interest 
-		total_count += 1
-		# first element in alignment list is always useless - need it just because it is the original AMRs
 		index = 0
-		# how to handle the fucking internal nodes
-		# for now -
-		# merging only the nodes, that are in the written AMR representaion, not the once that are in graphical
 		for index_in_alignment, branch_to_take in enumerate(alignment[1:]):
 			branch_to_take = int(branch_to_take) - 1
 			if index != 0:
@@ -426,12 +372,8 @@ class AMR(object):
 				branch_to_take = branch_to_take - self.amr[index]['text'].count(':')
 			if branch_to_take < 0:
 				break
-				print branch_to_take, self.amr[index]['text']
+				# print branch_to_take, self.amr[index]['text']
 			if int(branch_to_take) >= len(self.amr[index]['children_list']):
-				# just a hack, works for now, seems better now, used only around 10 times
-				# Example case - merging a node like - :name(/ :op1 dlfkasj :op2 dfklsaj , op2 can be aligned 
-				# if index_in_alignment < len(alignment) -2: 
-				interest += 1
 				break
 			index = self.amr[index]['children_list'][int(branch_to_take)]
 		return index
@@ -520,7 +462,6 @@ class AMR(object):
 		node_list = [x if ':' not in x else x[: x.index(':')-1] for x in node_list]
 		for node in node_list:
 			if not node.startswith('/ '):
-				# print node
 				0/0
 		node_list = [node[1:] for node in node_list]
 		return node_list
@@ -667,7 +608,6 @@ class AMR(object):
 		return nodes
 
 	def get_alignments(self,alignments=[]):
-		# self.alignments is a list of alignment
 		# alignment is a list of branch to take at each step in AMR
 		new_format_alignment = {}
 		for alignment in alignments:
@@ -693,12 +633,10 @@ class AMR(object):
 			self.text_index_to_var[key] = temp_var_set
 
 	def get_var_to_index_mapping(self,):
-		# at one of the indeices mapped with the variable,
+		# at one of the indices mapped with the variable,
 		# we will have the text information accociated with the variable
 		for index, node in enumerate(self.amr):
 			if node['variable'] not in self.var_to_index.keys():	self.var_to_index[node['variable']] = []
-			# Not fully sure if this 'common_text' based method works for finding out if this is where the
-			# variable is defined
 			if len(self.amr[index]['common_text']) > 0:	self.var_to_index[node['variable']].insert(0,index)
 			else: self.var_to_index[node['variable']].append(index)
 

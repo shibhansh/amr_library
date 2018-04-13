@@ -119,15 +119,10 @@ def main(arguments):
 		document_amrs.append(new_document_amr)
 		target_summaries_amrs.append(current_target_summary_sent_amr_list)
 		imp_doc = index_doc
-		if imp_doc == 1000:
-			# just the first sentence of the story is the summary
-			predicted_summaries_amrs.append([current_doc_sent_amr_list[0]])
 
-		print index_doc 
 		if index_doc == imp_doc:
 			document_amrs[index_doc] = resolve_coref_doc_AMR(amr=document_amrs[index_doc],
 									resolved=True,story=' '.join(document_amrs[index_doc].text),
-									# location_of_resolved_story='auxiliary/human_corefs.txt',
 									location_of_resolved_story='auxiliary/'+dataset+'_predicted_resolutions.txt',
 									location_of_story_in_file=index_doc,
 									location_of_resolver='.',
